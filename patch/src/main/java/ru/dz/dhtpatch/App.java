@@ -1,13 +1,18 @@
 package ru.dz.dhtpatch;
 
-/**
- * Hello world!
- *
- */
-public class App 
+import lombok.extern.java.Log;
+
+@Log
+public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
+        System.out.println( "uTorrent DHT patch.");
+        try{
+            new Patcher().start();
+        } catch (Exception e){
+            log.severe("Finished with error");
+        }
+
     }
 }
