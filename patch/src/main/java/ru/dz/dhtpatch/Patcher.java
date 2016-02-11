@@ -42,14 +42,41 @@ public class Patcher {
         Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
         createTmpFile(tempPath);
 
+        writeBeforeReplacement(path, searchResult, tempPath);
+        writeReplacement(tempPath);
+        writeAfterReplacement(path, searchResult, tempPath);
+    }
+
+    private void writeAfterReplacement(Path path, SearchResult searchResult, Path tempPath) {
+        try (
+                FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
+                FileChannel tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
+        ) {
+            long afterTargetWord = searchResult.getPosition() + Constant.TARGET_WORD.length;
+            long count = originChanel.size() - afterTargetWord;
+            tempChanel.transferFrom(originChanel, afterTargetWord, count);
+        } catch (IOException x) {
+            log.severe("I/O Exception: " + x);
+        }
+    }
+
+    private void writeReplacement(Path tempPath) {
+        try (
+                FileChannel tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
+        ) {
+            tempChanel.position(tempChanel.size());
+            tempChanel.write(ByteBuffer.wrap(Constant.REPLACEMENT));
+        } catch (IOException x) {
+            log.severe("I/O Exception: " + x);
+        }
+    }
+
+    private void writeBeforeReplacement(Path path, SearchResult searchResult, Path tempPath) {
         try (
                 FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
                 FileChannel tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
         ) {
             tempChanel.transferFrom(originChanel, 0, searchResult.getPosition());
-            tempChanel.position(tempChanel.size());
-            tempChanel.write(ByteBuffer.wrap(Constant.REPLACEMENT));
-            tempChanel.transferFrom(originChanel, searchResult.getPosition() + Constant.TARGET_WORD.length, originChanel.size());
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
         }
@@ -90,6 +117,7 @@ public class Patcher {
         do {
             nread = fileChannel.read(byteBuffer);
             if (nread > 0){
+                byteBuffer.flip();
                 String text = new String(byteBuffer.array(), Charset.forName("UTF-8"));
                 byteBuffer.clear();
                 handler.processReadedText(text, searchResult, fileChannel.position());

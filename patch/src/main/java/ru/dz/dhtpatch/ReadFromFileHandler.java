@@ -41,10 +41,8 @@ public class ReadFromFileHandler {
     }
 
     private Long findWordInThreeFragments(SearchResult searchResult, LinkedList<String> threeFragments, String threeFragmentsString) {
-        Long pointToTargetWord = 0l;
-        int offset = threeFragmentsString.indexOf(new String(Constant.TARGET_WORD));
-        pointToTargetWord = searchResult.getPosition() - threeFragments.size() + offset;
-        return pointToTargetWord;
+        long offset = threeFragmentsString.indexOf(new String(Constant.TARGET_WORD));
+        return offset;
     }
 
 }
