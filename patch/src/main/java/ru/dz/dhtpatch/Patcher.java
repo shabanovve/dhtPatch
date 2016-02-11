@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.LinkedList;
 
 /**
  * Created by Vladimir Shabanov on 09/02/16.
@@ -38,57 +37,64 @@ public class Patcher {
     }
 
     public void replaceWord(Path path) {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(50);
-        Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
+        SearchResult searchResult = makeSearch(path);
 
-        createTmpFile(path, tempPath);
+        Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
+        createTmpFile(tempPath);
 
         try (
                 FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
                 FileChannel tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
         ) {
-            LinkedList<String> threeFragments = new LinkedList<>();
-            SearchResult searchResult = findPosition(byteBuffer, originChanel);
-
-            if (searchResult.isPatternWasFound()) {
-                originChanel.position(searchResult.getPosition());
-            } else {
-                String msg = "Replacement pattern was not found";
-                log.severe(msg);
-                throw new RuntimeException(msg);
-            }
-
-            tempChanel.truncate(searchResult.getPosition());
+            tempChanel.transferFrom(originChanel, 0, searchResult.getPosition());
+            tempChanel.position(tempChanel.size());
             tempChanel.write(ByteBuffer.wrap(Constant.REPLACEMENT.getBytes()));
-            while (byteBuffer.hasRemaining()){
-                originChanel.read(byteBuffer);
-                tempChanel.write(byteBuffer);
-            }
+            tempChanel.transferFrom(originChanel, searchResult.getPosition() + Constant.TARGET_WORD.length(), originChanel.size());
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
         }
     }
 
-    public void createTmpFile(Path path, Path tempPath) {
+    private SearchResult makeSearch(Path path) {
+        SearchResult searchResult = null;
+        ByteBuffer byteBuffer = ByteBuffer.allocate(10);
+        try (
+                FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
+        ) {
+            searchResult = findPosition(byteBuffer, originChanel);
+
+            if (!searchResult.isPatternWasFound()) {
+                String msg = "Replacement pattern was not found";
+                log.severe(msg);
+                throw new RuntimeException(msg);
+            }
+        } catch (IOException x) {
+            log.severe("I/O Exception: " + x);
+        }
+        return searchResult;
+    }
+
+    public void createTmpFile(Path tempPath) {
         try {
             Files.deleteIfExists(tempPath);
-            Files.copy(path,tempPath);
+            Files.createFile(tempPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public SearchResult findPosition(ByteBuffer byteBuffer, FileChannel fc) throws IOException {
+    public SearchResult findPosition(ByteBuffer byteBuffer, FileChannel fileChannel) throws IOException {
         SearchResult searchResult = new SearchResult();
         ReadFromFileHandler handler = new ReadFromFileHandler();
         int nread;
         do {
-            nread = fc.read(byteBuffer);
-            byteBuffer.flip();
-            String text = new String(byteBuffer.array(),Charset.forName("UTF-8" ));
-            byteBuffer.clear();
-            handler.processReadedText(text,searchResult);
-        } while (nread != -1 && byteBuffer.hasRemaining() && !searchResult.isPatternWasFound());
+            nread = fileChannel.read(byteBuffer);
+            if (nread > 0){
+                String text = new String(byteBuffer.array(), Charset.forName("UTF-8"));
+                byteBuffer.clear();
+                handler.processReadedText(text, searchResult, fileChannel.position());
+            }
+        } while (nread > 0  && !searchResult.isPatternWasFound());
         return searchResult;
     }
 

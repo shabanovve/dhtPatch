@@ -50,39 +50,11 @@ public class PatcherTest {
     }
 
     private void fillWithStrings(FileChannel fileChannel) throws IOException {
-        for (Integer i = 0; i < 20; i++){
+        for (Integer i = 0; i < 5; i++){
             String text = i.toString() + "test ";
             fileChannel.write(ByteBuffer.wrap(text.getBytes()));
         }
     }
 
-    @org.junit.Test
-    public void testCreateTmpFile() throws Exception {
 
-    }
-
-    @org.junit.Test
-    public void testInitStringBuilder() throws Exception {
-
-    }
-
-    @org.junit.Test
-    public void testFindPosition() throws Exception {
-
-    }
-
-    @org.junit.Test
-    public void testRevertFromBackup() throws Exception {
-
-    }
-
-    @org.junit.Test
-    public void testFindFile() throws Exception {
-
-    }
-
-    @org.junit.Test
-    public void testIsFilePatched() throws Exception {
-
-    }
 }
