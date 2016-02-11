@@ -21,6 +21,7 @@ public class Patcher {
         try {
             Path path = findFile();
             if (isFilePatched(path)) {
+                System.out.println("File already is patched");
                 revertFromBackup(path);
             } else {
                 makePatch(path);
@@ -45,6 +46,13 @@ public class Patcher {
         writeBeforeReplacement(path, searchResult, tempPath);
         writeReplacement(tempPath);
         writeAfterReplacement(path, searchResult, tempPath);
+
+        try {
+            Files.delete(path);
+            Files.move(tempPath,path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void writeAfterReplacement(Path path, SearchResult searchResult, Path tempPath) {
@@ -128,7 +136,7 @@ public class Patcher {
     }
 
     public void revertFromBackup(Path file) {
-
+        System.out.println("Revert from backup");
     }
 
     public Path findFile() {
