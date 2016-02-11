@@ -23,7 +23,7 @@ public class ReadFromFileHandler {
     }
 
     private void checkPattenr(SearchResult searchResult, String threeFragmentsString, long position) {
-        if (threeFragmentsString.contains(Constant.PATTERN)) {
+        if (threeFragmentsString.contains(new String(Constant.PATTERN))) {
             Long offset = findWordInThreeFragments(searchResult, threeFragments, threeFragmentsString);
             searchResult.setPosition(position - threeFragmentsString.length() + offset);
             searchResult.setPatternWasFound(true);
@@ -42,7 +42,7 @@ public class ReadFromFileHandler {
 
     private Long findWordInThreeFragments(SearchResult searchResult, LinkedList<String> threeFragments, String threeFragmentsString) {
         Long pointToTargetWord = 0l;
-        int offset = threeFragmentsString.indexOf(Constant.TARGET_WORD);
+        int offset = threeFragmentsString.indexOf(new String(Constant.TARGET_WORD));
         pointToTargetWord = searchResult.getPosition() - threeFragments.size() + offset;
         return pointToTargetWord;
     }

@@ -41,7 +41,7 @@ public class PatcherTest {
         Files.createFile(path);
         try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.WRITE)){
             fillWithStrings(fileChannel);
-            fileChannel.write(ByteBuffer.wrap(Constant.PATTERN.getBytes()));
+            fileChannel.write(ByteBuffer.wrap(Constant.PATTERN));
             fillWithStrings(fileChannel);
         } catch (Exception e){
             e.printStackTrace();

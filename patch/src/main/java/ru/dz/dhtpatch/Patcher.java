@@ -48,8 +48,8 @@ public class Patcher {
         ) {
             tempChanel.transferFrom(originChanel, 0, searchResult.getPosition());
             tempChanel.position(tempChanel.size());
-            tempChanel.write(ByteBuffer.wrap(Constant.REPLACEMENT.getBytes()));
-            tempChanel.transferFrom(originChanel, searchResult.getPosition() + Constant.TARGET_WORD.length(), originChanel.size());
+            tempChanel.write(ByteBuffer.wrap(Constant.REPLACEMENT));
+            tempChanel.transferFrom(originChanel, searchResult.getPosition() + Constant.TARGET_WORD.length, originChanel.size());
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
         }

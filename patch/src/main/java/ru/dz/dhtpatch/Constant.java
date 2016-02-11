@@ -4,7 +4,7 @@ package ru.dz.dhtpatch;
  * Created by Vladimir Shabanov on 10/02/16.
  */
 public class Constant {
-    public static final String TARGET_WORD = "private";
-    public static final String PATTERN = "length\u0000" + TARGET_WORD;
-    public static final String REPLACEMENT = "priuate";
+    public static final byte[] TARGET_WORD = {0x70,0x72,0x69,0x76,0x61,0x74,0x65};
+    public static final byte[] PATTERN = {0x6C,0x65,0x6E,0x67,0x74,0x68,0x00,0x70,0x72,0x69,0x76,0x61,0x74,0x65};
+    public static final byte[] REPLACEMENT = {0x70,0x72,0x69,0x75,0x61,0x74,0x65};
 }
