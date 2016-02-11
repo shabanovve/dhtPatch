@@ -15,6 +15,7 @@ import java.nio.file.StandardOpenOption;
  */
 public class PatcherTest {
 
+    private static final int MAX = 3;
     private Path path;
     private String fileName = "test";
 
@@ -40,17 +41,17 @@ public class PatcherTest {
         Files.deleteIfExists(path);
         Files.createFile(path);
         try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.WRITE)){
-            fillWithStrings(fileChannel);
+            fillWithStrings(fileChannel,0);
             fileChannel.write(ByteBuffer.wrap(Constant.PATTERN));
-            fillWithStrings(fileChannel);
+            fillWithStrings(fileChannel,MAX);
         } catch (Exception e){
             e.printStackTrace();
         }
         return path;
     }
 
-    private void fillWithStrings(FileChannel fileChannel) throws IOException {
-        for (Integer i = 0; i < 5; i++){
+    private void fillWithStrings(FileChannel fileChannel, int start) throws IOException {
+        for (Integer i = start; i < start + MAX; i++){
             String text = i.toString() + "test ";
             fileChannel.write(ByteBuffer.wrap(text.getBytes()));
         }
