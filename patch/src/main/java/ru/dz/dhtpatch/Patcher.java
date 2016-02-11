@@ -54,6 +54,7 @@ public class Patcher {
         ) {
             long afterTargetWord = searchResult.getPosition() + Constant.TARGET_WORD.length;
             long count = originChanel.size() - afterTargetWord;
+            originChanel.position(afterTargetWord);
             tempChanel.transferFrom(originChanel, afterTargetWord, count);
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
@@ -131,7 +132,7 @@ public class Patcher {
     }
 
     public Path findFile() {
-        return null;
+        return Paths.get("uTorrent");
     }
 
     public boolean isFilePatched(Path file) {
