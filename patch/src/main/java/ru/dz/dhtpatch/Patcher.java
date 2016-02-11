@@ -135,12 +135,20 @@ public class Patcher {
         return searchResult;
     }
 
-    public void revertFromBackup(Path file) {
+    public void revertFromBackup(Path path) {
         System.out.println("Revert from backup");
+        try {
+            Path backupPath = Paths.get(Constant.fileName);
+            Files.delete(path);
+            Files.move(backupPath,path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public Path findFile() {
-        return Paths.get("uTorrent");
+        return Paths.get(Constant.fileName);
     }
 
     public boolean isFilePatched(Path file) {
