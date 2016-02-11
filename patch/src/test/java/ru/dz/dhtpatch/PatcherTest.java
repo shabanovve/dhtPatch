@@ -48,16 +48,18 @@ public class PatcherTest {
             byte[] origin,temp;
             do {
                 nReadOrgin = originChannel.read(originByteBuffer);
-                nReadTemp = originChannel.read(tempByteBuffer);
+                nReadTemp = tempChannel.read(tempByteBuffer);
 
                 origin = originByteBuffer.array();
                 temp = tempByteBuffer.array();
 
                 for (int i = 0; i < originByteBuffer.array().length; i++) {
-                    if (origin[i] != temp[i]) {
+                    if (i != 8 && origin[i] != temp[i]) {
                         assert false;//String to place breakpoint
                     }
                 }
+                originByteBuffer.clear();
+                tempByteBuffer.clear();
             } while (nReadOrgin > 0 && nReadTemp > 0);
         } catch (Exception e) {
             e.printStackTrace();
