@@ -26,11 +26,6 @@ public class PatcherTest {
     }
 
     @org.junit.Test
-    public void testMakePatch() throws Exception {
-
-    }
-
-    @org.junit.Test
     public void testReplaceWord() throws Exception {
         Patcher patcher = new Patcher();
         Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");

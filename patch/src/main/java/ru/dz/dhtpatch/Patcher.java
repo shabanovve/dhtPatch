@@ -50,7 +50,7 @@ public class Patcher {
     }
 
     public void replaceWord(Path path,Path tempPath) {
-        SearchResult searchResult = makeSearch(path, new String(Constant.PATTERN));
+        SearchResult searchResult = makeSearch(path, Constant.PATTERN);
 
         writeBeforeReplacement(path, searchResult, tempPath);
         writeReplacement(tempPath);
@@ -93,7 +93,7 @@ public class Patcher {
         }
     }
 
-    private SearchResult makeSearch(Path path, String pattern) {
+    private SearchResult makeSearch(Path path, byte[] pattern) {
         SearchResult searchResult = null;
         ByteBuffer byteBuffer = ByteBuffer.allocate(10);
         try (
@@ -138,7 +138,7 @@ public class Patcher {
     }
 
     public boolean isFilePatched(Path path) {
-        SearchResult searchResult = makeSearch(path,new String(Constant.PATCHED_PATTERN));
+        SearchResult searchResult = makeSearch(path,Constant.PATCHED_PATTERN);
         return searchResult.isPatternWasFound();
     }
 }
