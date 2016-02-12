@@ -34,25 +34,28 @@ public class Patcher {
 
     public void makePatch(Path path) throws IOException {
         new Backuper().backup(path);
-        replaceWord(path);
-    }
-
-    public void replaceWord(Path path) {
-        SearchResult searchResult = makeSearch(path, new String(Constant.PATTERN));
 
         Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
         createTmpFile(tempPath);
+        replaceWord(path,tempPath);
+        replaceOriginFile(path, tempPath);
+    }
 
-        writeBeforeReplacement(path, searchResult, tempPath);
-        writeReplacement(tempPath);
-        writeAfterReplacement(path, searchResult, tempPath);
-
+    private void replaceOriginFile(Path path, Path tempPath) {
         try {
             Files.delete(path);
             Files.move(tempPath,path);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void replaceWord(Path path,Path tempPath) {
+        SearchResult searchResult = makeSearch(path, new String(Constant.PATTERN));
+
+        writeBeforeReplacement(path, searchResult, tempPath);
+        writeReplacement(tempPath);
+        writeAfterReplacement(path, searchResult, tempPath);
     }
 
     private void writeAfterReplacement(Path path, SearchResult searchResult, Path tempPath) {

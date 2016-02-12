@@ -32,7 +32,10 @@ public class PatcherTest {
 
     @org.junit.Test
     public void testReplaceWord() throws Exception {
-        new Patcher().makePatch(path);
+        Patcher patcher = new Patcher();
+        Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
+        patcher.createTmpFile(tempPath);
+        patcher.replaceWord(path,tempPath);
 
         Path pathOftemp = Paths.get(fileName + ".tmp");
         try (
