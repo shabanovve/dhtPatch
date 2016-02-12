@@ -40,7 +40,7 @@ public class ReadFromFileHandler {
         return threeFragmentsString;
     }
 
-    private Long findWordInThreeFragments(SearchResult searchResult, LinkedList<String> threeFragments, String threeFragmentsString) {
+    private Long findWordInThreeFragments(String threeFragmentsString) {
         long offset = threeFragmentsString.indexOf(new String(Constant.TARGET_WORD));
         return offset;
     }
