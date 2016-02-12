@@ -24,7 +24,7 @@ public class ReadFromFileHandler {
 
     private void checkPattenr(SearchResult searchResult, String threeFragmentsString, long position, String pattern) {
         if (threeFragmentsString.contains(pattern)) {
-            Long offset = findWordInThreeFragments(searchResult, threeFragments, threeFragmentsString);
+            Long offset = findWordInThreeFragments(threeFragmentsString);
             searchResult.setPosition(position - threeFragmentsString.length() + offset);
             searchResult.setPatternWasFound(true);
         }
