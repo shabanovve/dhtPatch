@@ -64,8 +64,6 @@ public class PatcherTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
     private Path createTestFile() throws IOException {

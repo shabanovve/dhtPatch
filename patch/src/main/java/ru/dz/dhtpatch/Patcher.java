@@ -38,7 +38,7 @@ public class Patcher {
     }
 
     public void replaceWord(Path path) {
-        SearchResult searchResult = makeSearch(path);
+        SearchResult searchResult = makeSearch(path, new String(Constant.PATTERN));
 
         Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
         createTmpFile(tempPath);
@@ -91,13 +91,13 @@ public class Patcher {
         }
     }
 
-    private SearchResult makeSearch(Path path) {
+    private SearchResult makeSearch(Path path, String pattern) {
         SearchResult searchResult = null;
         ByteBuffer byteBuffer = ByteBuffer.allocate(10);
         try (
                 FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
         ) {
-            searchResult = findPosition(byteBuffer, originChanel);
+            searchResult = findPosition(byteBuffer, originChanel, pattern);
 
             if (!searchResult.isPatternWasFound()) {
                 String msg = "Replacement pattern was not found";
@@ -119,7 +119,7 @@ public class Patcher {
         }
     }
 
-    public SearchResult findPosition(ByteBuffer byteBuffer, FileChannel fileChannel) throws IOException {
+    public SearchResult findPosition(ByteBuffer byteBuffer, FileChannel fileChannel, String pattern) throws IOException {
         SearchResult searchResult = new SearchResult();
         ReadFromFileHandler handler = new ReadFromFileHandler();
         int nread;
@@ -129,7 +129,7 @@ public class Patcher {
                 byteBuffer.flip();
                 String text = new String(byteBuffer.array(), Charset.forName("UTF-8"));
                 byteBuffer.clear();
-                handler.processReadedText(text, searchResult, fileChannel.position());
+                handler.processReadedText(text, searchResult, fileChannel.position(),pattern);
             }
         } while (nread > 0  && !searchResult.isPatternWasFound());
         return searchResult;
@@ -151,7 +151,8 @@ public class Patcher {
         return Paths.get(Constant.fileName);
     }
 
-    public boolean isFilePatched(Path file) {
-        return false;
+    public boolean isFilePatched(Path path) {
+        SearchResult searchResult = makeSearch(path,new String(Constant.PATCHED_PATTERN));
+        return searchResult.isPatternWasFound();
     }
 }

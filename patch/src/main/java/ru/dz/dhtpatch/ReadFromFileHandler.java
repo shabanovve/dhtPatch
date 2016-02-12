@@ -9,7 +9,7 @@ public class ReadFromFileHandler {
     LinkedList<String> threeFragments = new LinkedList<String>();
     StringBuilder stringBuilder = new StringBuilder();
 
-    public void processReadedText(String text, SearchResult searchResult, long position) {
+    public void processReadedText(String text, SearchResult searchResult, long position, String pattern) {
         boolean shouldFillCollection = threeFragments.size() < 3;
         if (shouldFillCollection){
             threeFragments.add(text);
@@ -18,12 +18,12 @@ public class ReadFromFileHandler {
             threeFragments.removeFirst();
             threeFragments.add(text);
             threeFragmentsString = buildString();
-            checkPattenr(searchResult, threeFragmentsString,position);
+            checkPattenr(searchResult, threeFragmentsString,position,pattern);
         }
     }
 
-    private void checkPattenr(SearchResult searchResult, String threeFragmentsString, long position) {
-        if (threeFragmentsString.contains(new String(Constant.PATTERN))) {
+    private void checkPattenr(SearchResult searchResult, String threeFragmentsString, long position, String pattern) {
+        if (threeFragmentsString.contains(pattern)) {
             Long offset = findWordInThreeFragments(searchResult, threeFragments, threeFragmentsString);
             searchResult.setPosition(position - threeFragmentsString.length() + offset);
             searchResult.setPatternWasFound(true);
