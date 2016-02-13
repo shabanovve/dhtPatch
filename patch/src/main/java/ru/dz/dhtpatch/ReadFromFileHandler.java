@@ -38,7 +38,7 @@ public class ReadFromFileHandler {
         return result;
     }
 
-    private void checkPattenr(SearchResult searchResult, byte[] threeFragmentsBytes, long position, byte[] pattern) {
+    public void checkPattenr(SearchResult searchResult, byte[] threeFragmentsBytes, long position, byte[] pattern) {
         SearchResult searchingIntoFragments = findWordInThreeFragments(threeFragmentsBytes,pattern);
         if (searchingIntoFragments.isPatternWasFound()) {
             searchResult.setPosition(position - threeFragmentsBytes.length + searchingIntoFragments.getPosition());
@@ -47,7 +47,6 @@ public class ReadFromFileHandler {
     }
 
     public SearchResult findWordInThreeFragments(byte[] threeFragmentsBytes, byte[] pattern) {
-//        long offset = threeFragmentsString.indexOf(new String(Constant.TARGET_WORD));
         int offset = 0;
         boolean mutch = true;
         for (; offset < threeFragmentsBytes.length - pattern.length; offset++) {
