@@ -2,6 +2,7 @@ package ru.dz.dhtpatch;
 
 import lombok.extern.java.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -36,20 +37,20 @@ public class Patcher {
 
         Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
         createTmpFile(tempPath);
-        replaceWord(path,tempPath);
+        replaceWord(path, tempPath);
         replaceOriginFile(path, tempPath);
     }
 
     private void replaceOriginFile(Path path, Path tempPath) {
         try {
             Files.delete(path);
-            Files.move(tempPath,path);
+            Files.move(tempPath, path);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void replaceWord(Path path,Path tempPath) {
+    public void replaceWord(Path path, Path tempPath) {
         SearchResult searchResult = makeSearch(path, Constant.PATTERN);
 
         writeBeforeReplacement(path, searchResult, tempPath);
@@ -126,7 +127,7 @@ public class Patcher {
         try {
             Path backupPath = Paths.get(Constant.fileName);
             Files.delete(path);
-            Files.move(backupPath,path);
+            Files.move(backupPath, path);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -134,11 +135,18 @@ public class Patcher {
     }
 
     public Path findFile() {
-        return Paths.get(Constant.fileName);
+        File f = new File(System.getProperty("java.class.path"));
+        String dir = f.getAbsoluteFile().getParentFile().toString();
+        String pathToFile = dir + "/" + Constant.fileName;
+        Path path = Paths.get(pathToFile);
+        if (!Files.exists(path)) {
+            throw new RuntimeException("File " + pathToFile + "not found");
+        }
+        return path;
     }
 
     public boolean isFilePatched(Path path) {
-        SearchResult searchResult = makeSearch(path,Constant.PATCHED_PATTERN);
+        SearchResult searchResult = makeSearch(path, Constant.PATCHED_PATTERN);
         return searchResult.isPatternWasFound();
     }
 }
