@@ -39,18 +39,19 @@ public class ReadFromFileHandler {
     }
 
     private void checkPattenr(SearchResult searchResult, byte[] threeFragmentsBytes, long position, byte[] pattern) {
-        int offset = findWordInThreeFragments(threeFragmentsBytes,pattern);
-        if (offset > 0) {
-            searchResult.setPosition(position - threeFragmentsBytes.length + offset);
+        SearchResult searchingIntoFragments = findWordInThreeFragments(threeFragmentsBytes,pattern);
+        if (searchingIntoFragments.isPatternWasFound()) {
+            searchResult.setPosition(position - threeFragmentsBytes.length + searchingIntoFragments.getPosition());
             searchResult.setPatternWasFound(true);
         }
     }
 
-    public int findWordInThreeFragments(byte[] threeFragmentsBytes, byte[] pattern) {
+    public SearchResult findWordInThreeFragments(byte[] threeFragmentsBytes, byte[] pattern) {
 //        long offset = threeFragmentsString.indexOf(new String(Constant.TARGET_WORD));
         int offset = 0;
         boolean mutch = true;
         for (; offset < threeFragmentsBytes.length - pattern.length; offset++) {
+            mutch = true;
             for (int j = 0; j < pattern.length; j++) {
                 if (threeFragmentsBytes[offset + j] != pattern[j]) {
                     mutch = false;
@@ -58,8 +59,10 @@ public class ReadFromFileHandler {
                 }
             }
         }
-        if (!mutch) offset = 0;
-        return offset;
+        SearchResult searchResult = new SearchResult();
+        searchResult.setPosition(offset);
+        searchResult.setPatternWasFound(mutch);
+        return searchResult;
     }
 
 }

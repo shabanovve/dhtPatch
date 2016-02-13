@@ -10,14 +10,6 @@ import java.util.LinkedList;
  */
 public class ReadFromFileHandlerTest {
 
-
-    @Test
-    public void testFindWordInThreeFragments() throws Exception {
-        byte[] text = {0x6C, 0x65, 0x6E, 0x67, 0x74, 0x68, 0x00, 0x70, 0x72, 0x69, 0x76, 0x61, 0x74, 0x65};
-        long position = new ReadFromFileHandler().findWordInThreeFragments(text,Constant.PATTERN);
-        assert position > 0;
-    }
-
     @Test
     public void testBuildString() throws Exception {
         LinkedList<byte[]> fragments = new LinkedList<>();
@@ -29,4 +21,21 @@ public class ReadFromFileHandlerTest {
         byte[] sample = {0x1,0x2,0x3,0x1,0x2,0x3,0x1,0x2,0x3};
         assert Arrays.equals(result,sample);
     }
+
+    @Test
+    public void testFindWordInThreeFragments() throws Exception {
+        ReadFromFileHandler handler = new ReadFromFileHandler();
+        SearchResult searchResult = handler.findWordInThreeFragments(Constant.PATTERN,Constant.PATTERN);
+        assert searchResult.isPatternWasFound();
+    }
+
+    @Test
+    public void testProcessReadedText() throws Exception {
+        ReadFromFileHandler handler = new ReadFromFileHandler();
+        SearchResult searchResult = new SearchResult();
+        final long  position = 23l;
+        handler.processReadedText(Constant.PATTERN,searchResult,position,Constant.PATTERN);
+        assert position == searchResult.getPosition();
+    }
+
 }
