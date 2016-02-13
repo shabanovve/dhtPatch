@@ -9,16 +9,14 @@ public class ReadFromFileHandler {
     LinkedList<byte[]> threeFragments = new LinkedList<byte[]>();
 
     public void processReadedText(byte[] text, SearchResult searchResult, long position, byte[] pattern) {
-        boolean shouldFillCollection = threeFragments.size() < 3;
-        if (shouldFillCollection) {
-            threeFragments.add(text);
-        } else {
-            byte[] threeFragmentsBytes;
+        boolean isCollectionFilled = threeFragments.size() < 3;
+        threeFragments.add(text);
+        if (isCollectionFilled) {
             threeFragments.removeFirst();
-            threeFragments.add(text);
-            threeFragmentsBytes = buildString(threeFragments);
-            checkPattenr(searchResult, threeFragmentsBytes, position, pattern);
         }
+        byte[] threeFragmentsBytes;
+        threeFragmentsBytes = buildString(threeFragments);
+        checkPattenr(searchResult, threeFragmentsBytes, position, pattern);
     }
 
     public byte[] buildString(LinkedList<byte[]> threeFragments) {
