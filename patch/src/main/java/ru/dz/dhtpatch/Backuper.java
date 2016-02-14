@@ -23,7 +23,9 @@ public class Backuper {
         log.info("Revert from backup");
         try {
             Path backupPath = FileUtils.findFile(Constant.BACKUP_FILE_NAME);
-            Files.move(backupPath, path);
+            Files.delete(path);
+            Files.copy(backupPath, path);
+            Files.delete(backupPath);
         } catch (IOException | URISyntaxException e) {
             log.severe(e.getMessage());
         }
