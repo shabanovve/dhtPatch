@@ -4,6 +4,7 @@ import lombok.extern.java.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -26,8 +27,8 @@ public class Patcher {
             } else {
                 makePatch(path);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | URISyntaxException e) {
+            log.severe(e.getMessage());
         }
 
     }
@@ -52,6 +53,8 @@ public class Patcher {
 
     public void replaceWord(Path path, Path tempPath) {
         SearchResult searchResult = makeSearch(path, Constant.PATTERN);
+        if (!searchResult.isPatternWasFound())
+            throw new RuntimeException("Replacement pattern was not found");
 
         writeBeforeReplacement(path, searchResult, tempPath);
         writeReplacement(tempPath);
@@ -102,11 +105,7 @@ public class Patcher {
             Searcher searcher = new Searcher();
             searchResult = searcher.findPatternPosition(originChanel, pattern);
 
-            if (!searchResult.isPatternWasFound()) {
-                String msg = "Replacement pattern was not found";
-                log.severe(msg);
-                throw new RuntimeException(msg);
-            } else {
+            if (searchResult.isPatternWasFound()) {
                 correctToTargetWord(searchResult, searcher);
             }
         } catch (IOException x) {
@@ -142,13 +141,14 @@ public class Patcher {
 
     }
 
-    public Path findFile() {
-        File f = new File(System.getProperty("java.class.path"));
-        String dir = f.getAbsoluteFile().getParentFile().toString();
+    public Path findFile() throws URISyntaxException {
+        String dir = new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent();
         String pathToFile = dir + "/" + Constant.fileName;
         Path path = Paths.get(pathToFile);
         if (!Files.exists(path)) {
-            throw new RuntimeException("File " + pathToFile + "not found");
+            throw new RuntimeException("File " + pathToFile + " not found");
+        } else {
+            log.info("File " + pathToFile + " is found");
         }
         return path;
     }
