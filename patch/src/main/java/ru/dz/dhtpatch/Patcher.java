@@ -20,7 +20,7 @@ public class Patcher {
 
     public void start() {
         try {
-            Path path = findFile();
+            Path path = findFile(Constant.FILE_NAME);
             if (isFilePatched(path)) {
                 System.out.println("File already is patched");
                 revertFromBackup(path);
@@ -46,6 +46,7 @@ public class Patcher {
         try {
             Files.delete(path);
             Files.move(tempPath, path);
+            Runtime.getRuntime().exec("chmod +x " + path.getFileName().toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -132,18 +133,18 @@ public class Patcher {
     public void revertFromBackup(Path path) {
         System.out.println("Revert from backup");
         try {
-            Path backupPath = Paths.get(Constant.fileName);
+            Path backupPath = findFile(Constant.BACKUP_FILE_NAME);
             Files.delete(path);
             Files.move(backupPath, path);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | URISyntaxException e) {
+            log.severe(e.getMessage());
         }
 
     }
 
-    public Path findFile() throws URISyntaxException {
+    public Path findFile(String fileName) throws URISyntaxException {
         String dir = new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent();
-        String pathToFile = dir + "/" + Constant.fileName;
+        String pathToFile = dir + "/" + fileName;
         Path path = Paths.get(pathToFile);
         if (!Files.exists(path)) {
             throw new RuntimeException("File " + pathToFile + " not found");
