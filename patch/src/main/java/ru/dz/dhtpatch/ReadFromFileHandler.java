@@ -9,7 +9,7 @@ public class ReadFromFileHandler {
     LinkedList<byte[]> threeFragments = new LinkedList<byte[]>();
 
     public void processReadedText(byte[] text, SearchResult searchResult, long position, byte[] pattern) {
-        boolean isCollectionFilled = threeFragments.size() < 3;
+        boolean isCollectionFilled = threeFragments.size() == 3;
         threeFragments.add(text);
         if (isCollectionFilled) {
             threeFragments.removeFirst();
@@ -48,11 +48,12 @@ public class ReadFromFileHandler {
         int offset = 0;
         boolean mutch = true;
         for (; offset < threeFragmentsBytes.length - pattern.length; offset++) {
-            mutch = true;
             for (int j = 0; j < pattern.length; j++) {
                 if (threeFragmentsBytes[offset + j] != pattern[j]) {
                     mutch = false;
                     break;
+                } else {
+                    mutch = true;
                 }
             }
         }
