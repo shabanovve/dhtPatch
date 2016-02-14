@@ -2,7 +2,6 @@ package ru.dz.dhtpatch;
 
 import lombok.extern.java.Log;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -20,7 +19,7 @@ public class Patcher {
 
     public void start() {
         try {
-            Path path = findFile(Constant.FILE_NAME);
+            Path path = FileUtils.findFile(Constant.FILE_NAME);
             if (isFilePatched(path)) {
                 log.info("File already is patched");
                 revertFromBackup(path);
@@ -131,27 +130,7 @@ public class Patcher {
     }
 
     public void revertFromBackup(Path path) {
-        log.info("Revert from backup");
-        try {
-            Path backupPath = findFile(Constant.BACKUP_FILE_NAME);
-            Files.delete(path);
-            Files.move(backupPath, path);
-        } catch (IOException | URISyntaxException e) {
-            log.severe(e.getMessage());
-        }
-
-    }
-
-    public Path findFile(String fileName) throws URISyntaxException {
-        String dir = new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent();
-        String pathToFile = dir + "/" + fileName;
-        Path path = Paths.get(pathToFile);
-        if (!Files.exists(path)) {
-            throw new RuntimeException("File " + pathToFile + " not found");
-        } else {
-            log.info("File " + pathToFile + " is found");
-        }
-        return path;
+        new Backuper().revert(path);
     }
 
     public boolean isFilePatched(Path path) {
