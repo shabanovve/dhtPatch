@@ -10,9 +10,9 @@ public class App
         System.out.println( "uTorrent DHT patch.");
         try{
             new Patcher().start();
+            log.info("Patching successfully complete.");
         } catch (Exception e){
             log.severe("Finished with error");
         }
-
     }
 }

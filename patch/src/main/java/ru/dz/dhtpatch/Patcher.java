@@ -22,7 +22,7 @@ public class Patcher {
         try {
             Path path = findFile(Constant.FILE_NAME);
             if (isFilePatched(path)) {
-                System.out.println("File already is patched");
+                log.info("File already is patched");
                 revertFromBackup(path);
             } else {
                 makePatch(path);
@@ -48,7 +48,7 @@ public class Patcher {
             Files.move(tempPath, path);
             Runtime.getRuntime().exec("chmod +x " + path.getFileName().toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.severe(e.getMessage());
         }
     }
 
@@ -126,12 +126,12 @@ public class Patcher {
             Files.deleteIfExists(tempPath);
             Files.createFile(tempPath);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.severe(e.getMessage());
         }
     }
 
     public void revertFromBackup(Path path) {
-        System.out.println("Revert from backup");
+        log.info("Revert from backup");
         try {
             Path backupPath = findFile(Constant.BACKUP_FILE_NAME);
             Files.delete(path);
