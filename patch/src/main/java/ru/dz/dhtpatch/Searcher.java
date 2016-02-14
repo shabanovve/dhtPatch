@@ -17,8 +17,8 @@ public class Searcher {
             nread = fileChannel.read(byteBuffer);
             if (nread > 0){
                 byteBuffer.flip();
-                byteBuffer.clear();
                 handler.processReadedText(byteBuffer.array(), searchResult, fileChannel.position(),pattern);
+                byteBuffer.clear();
             }
         } while (nread > 0  && !searchResult.isPatternWasFound());
         return searchResult;
