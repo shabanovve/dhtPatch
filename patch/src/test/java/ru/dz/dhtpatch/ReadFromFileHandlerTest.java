@@ -36,6 +36,8 @@ public class ReadFromFileHandlerTest {
         final long position = (long) Constant.PATTERN.length;
         handler.processReadedText(Constant.PATTERN, searchResult, position, Constant.PATTERN);
         assert searchResult.isPatternWasFound();
+        handler.processReadedText(Constant.PATTERN, searchResult, position, Constant.PATCHED_PATTERN);
+        assert !searchResult.isPatternWasFound();
     }
 
     @Test
