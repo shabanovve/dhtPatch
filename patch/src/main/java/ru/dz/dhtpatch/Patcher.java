@@ -96,21 +96,29 @@ public class Patcher {
 
     private SearchResult makeSearch(Path path, byte[] pattern) {
         SearchResult searchResult = null;
-        ByteBuffer byteBuffer = ByteBuffer.allocate(10);
         try (
                 FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
         ) {
-            searchResult = new Searcher().findPosition(byteBuffer, originChanel, pattern);
+            Searcher searcher = new Searcher();
+            searchResult = searcher.findPatternPosition(originChanel, pattern);
 
             if (!searchResult.isPatternWasFound()) {
                 String msg = "Replacement pattern was not found";
                 log.severe(msg);
                 throw new RuntimeException(msg);
+            } else {
+                correctToTargetWord(searchResult, searcher);
             }
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
         }
         return searchResult;
+    }
+
+    private void correctToTargetWord(SearchResult searchResult, Searcher searcher) {
+        long targetWordOffset = searcher.findTargetWordInPattern(Constant.PATTERN, Constant.TARGET_WORD);
+        long patternOffset = searchResult.getPosition();
+        searchResult.setPosition(patternOffset + targetWordOffset);
     }
 
     public void createTmpFile(Path tempPath) {

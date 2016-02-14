@@ -10,4 +10,6 @@ public class Constant {
     public static final byte[] REPLACEMENT = {0x70,0x72,0x69,0x75,0x61,0x74,0x65};
     public static final String fileName = "uTorrent";
     public static final String backupFileName = fileName + ".backup";
+    public static final int BUFFER_SIZE = 10;
+    public static final int TREE_FRAGMENTS = 3;
 }

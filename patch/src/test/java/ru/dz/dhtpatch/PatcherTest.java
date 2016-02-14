@@ -26,6 +26,11 @@ public class PatcherTest {
     }
 
     @org.junit.Test
+    public void testOfBuffer(){
+        assert Constant.TREE_FRAGMENTS * Constant.BUFFER_SIZE > Constant.PATTERN.length;
+    }
+
+    @org.junit.Test
     public void testReplaceWord() throws Exception {
         Patcher patcher = new Patcher();
         Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
