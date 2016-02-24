@@ -26,7 +26,9 @@ public class Patcher {
             } else {
                 makePatch(path);
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
+            log.severe(e.getMessage());
+        } catch (URISyntaxException e) {
             log.severe(e.getMessage());
         }
 
@@ -62,46 +64,87 @@ public class Patcher {
     }
 
     private void writeAfterReplacement(Path path, SearchResult searchResult, Path tempPath) {
-        try (
-                FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
-                FileChannel tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
-        ) {
+        FileChannel originChanel = null;
+        FileChannel tempChanel = null;
+        try {
+            originChanel = FileChannel.open(path, StandardOpenOption.READ);
+            tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
+
             long afterTargetWord = searchResult.getPosition() + Constant.TARGET_WORD.length;
             long count = originChanel.size() - afterTargetWord;
             originChanel.position(afterTargetWord);
             tempChanel.transferFrom(originChanel, afterTargetWord, count);
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
+        } finally {
+            if (originChanel != null) {
+                try {
+                    originChanel.close();
+                } catch (IOException e) {
+                    log.severe(e.getMessage());
+                }
+            }
+            if (tempChanel != null) {
+                try {
+                    tempChanel.close();
+                } catch (IOException e) {
+                    log.severe(e.getMessage());
+                }
+            }
         }
     }
 
     private void writeReplacement(Path tempPath) {
-        try (
-                FileChannel tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
-        ) {
+        FileChannel tempChanel = null;
+        try {
+            tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
             tempChanel.position(tempChanel.size());
             tempChanel.write(ByteBuffer.wrap(Constant.REPLACEMENT));
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
+        } finally {
+            if (tempChanel != null) {
+                try {
+                    tempChanel.close();
+                } catch (IOException e) {
+                    log.severe(e.getMessage());
+                }
+            }
         }
     }
 
     private void writeBeforeReplacement(Path path, SearchResult searchResult, Path tempPath) {
-        try (
-                FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
-                FileChannel tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
-        ) {
+        FileChannel originChanel = null;
+        FileChannel tempChanel = null;
+        try {
+            originChanel = FileChannel.open(path, StandardOpenOption.READ);
+            tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
             tempChanel.transferFrom(originChanel, 0, searchResult.getPosition());
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
+        } finally {
+            if (originChanel != null) {
+                try {
+                    originChanel.close();
+                } catch (IOException e) {
+                    log.severe(e.getMessage());
+                }
+            }
+            if (tempChanel != null) {
+                try {
+                    tempChanel.close();
+                } catch (IOException e) {
+                    log.severe(e.getMessage());
+                }
+            }
         }
     }
 
     private SearchResult makeSearch(Path path, byte[] pattern) {
         SearchResult searchResult = null;
-        try (
-                FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
-        ) {
+        FileChannel originChanel = null;
+        try {
+            originChanel = FileChannel.open(path, StandardOpenOption.READ);
             Searcher searcher = new Searcher();
             searchResult = searcher.findPatternPosition(originChanel, pattern);
 
@@ -110,6 +153,14 @@ public class Patcher {
             }
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
+        } finally {
+            try {
+                originChanel.close();
+            } catch (IOException e) {
+                if (originChanel != null) {
+                    log.severe(e.getMessage());
+                }
+            }
         }
         return searchResult;
     }

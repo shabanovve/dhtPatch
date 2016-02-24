@@ -26,7 +26,7 @@ public class PatcherTest {
     }
 
     @org.junit.Test
-    public void testOfBuffer(){
+    public void testOfBuffer() {
         assert Constant.TREE_FRAGMENTS * Constant.BUFFER_SIZE > Constant.PATTERN.length;
     }
 
@@ -35,20 +35,21 @@ public class PatcherTest {
         Patcher patcher = new Patcher();
         Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
         patcher.createTmpFile(tempPath);
-        patcher.replaceWord(path,tempPath);
+        patcher.replaceWord(path, tempPath);
 
         Path pathOftemp = Paths.get(fileName + ".tmp");
-        try (
-                FileChannel originChannel = FileChannel.open(path, StandardOpenOption.READ);
-                FileChannel tempChannel = FileChannel.open(pathOftemp, StandardOpenOption.READ);
-        ) {
+        FileChannel originChannel = null;
+        FileChannel tempChannel = null;
+        try {
+            originChannel = FileChannel.open(path, StandardOpenOption.READ);
+            tempChannel = FileChannel.open(pathOftemp, StandardOpenOption.READ);
             assert originChannel.size() == tempChannel.size();
 
             ByteBuffer originByteBuffer = ByteBuffer.allocate(10);
             ByteBuffer tempByteBuffer = ByteBuffer.allocate(10);
 
             int nReadOrgin, nReadTemp;
-            byte[] origin,temp;
+            byte[] origin, temp;
             do {
                 nReadOrgin = originChannel.read(originByteBuffer);
                 nReadTemp = tempChannel.read(tempByteBuffer);
@@ -66,6 +67,13 @@ public class PatcherTest {
             } while (nReadOrgin > 0 && nReadTemp > 0);
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (originChannel != null) {
+                originChannel.close();
+            }
+            if (tempChannel != null) {
+                tempChannel.close();
+            }
         }
     }
 
@@ -73,12 +81,18 @@ public class PatcherTest {
         Path path = Paths.get(fileName);
         Files.deleteIfExists(path);
         Files.createFile(path);
-        try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.WRITE)) {
+        FileChannel fileChannel = null;
+        try {
+            fileChannel = FileChannel.open(path, StandardOpenOption.WRITE);
             fillWithStrings(fileChannel, 0);
             fileChannel.write(ByteBuffer.wrap(Constant.PATTERN));
             fillWithStrings(fileChannel, MAX);
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (fileChannel != null) {
+                fileChannel.close();
+            }
         }
         return path;
     }

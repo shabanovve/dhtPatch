@@ -12,7 +12,7 @@ public class SearcherTest {
 
     @Test
     public void testBuildString() throws Exception {
-        LinkedList<byte[]> fragments = new LinkedList<>();
+        LinkedList<byte[]> fragments = new LinkedList();
 
         byte[] bytesA = {0x1, 0x2, 0x3};
         fragments.add(bytesA);

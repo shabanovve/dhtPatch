@@ -26,7 +26,9 @@ public class Backuper {
             Files.delete(path);
             Files.copy(backupPath, path);
             Files.delete(backupPath);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException  e) {
+            log.severe(e.getMessage());
+        } catch (URISyntaxException e) {
             log.severe(e.getMessage());
         }
 
