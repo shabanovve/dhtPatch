@@ -2,32 +2,30 @@ package ru.dz.dhtpatch;
 
 import lombok.extern.java.Log;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Created by Vladimir Shabanov on 09/02/16.
  */
 @Log
 public class Backuper {
-    public void backup(Path pathToOriginFile) throws IOException {
-        Path pathToBackup = Paths.get(pathToOriginFile.getFileName().toString() + ".backup");
-        Files.deleteIfExists(pathToBackup);
-        Files.copy(pathToOriginFile,pathToBackup);
+    public void backup(File originFile) throws IOException {
+        File backupFile = new File(originFile.toURI().toString() + ".backup");
+        if (backupFile.exists()) {
+            backupFile.delete();
+        }
+        FileUtils.copy(originFile, backupFile);
     }
 
-    public void revert(Path path) {
+    public void revert(File file) {
         log.info("Revert from backup");
         try {
-            Path backupPath = FileUtils.findFile(Constant.BACKUP_FILE_NAME);
-            Files.delete(path);
-            Files.copy(backupPath, path);
-            Files.delete(backupPath);
-        } catch (IOException  e) {
-            log.severe(e.getMessage());
+            File backupFile = FileUtils.findFile(Constant.BACKUP_FILE_NAME);
+            file.delete();
+            FileUtils.copy(backupFile, file);
+            backupFile.delete();
         } catch (URISyntaxException e) {
             log.severe(e.getMessage());
         }
