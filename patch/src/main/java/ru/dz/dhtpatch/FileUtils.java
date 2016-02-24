@@ -2,11 +2,8 @@ package ru.dz.dhtpatch;
 
 import lombok.extern.java.Log;
 
-import java.io.File;
+import java.io.*;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Created by Vladimir Shabanov on 15/02/16.
@@ -14,17 +11,58 @@ import java.nio.file.Paths;
 @Log
 public class FileUtils {
 
-    public static Path findFile(String fileName) throws URISyntaxException {
+    public static File findFile(String fileName) throws URISyntaxException {
         String dir = new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent();
         String pathToFile = dir + "/" + fileName;
-        Path path = Paths.get(pathToFile);
-        if (!Files.exists(path)) {
+        File file = new File(pathToFile);
+        if (!file.exists()) {
             throw new RuntimeException("File " + pathToFile + " not found");
         } else {
             log.info("File " + pathToFile + " is found");
         }
-        return path;
+        return file;
     }
 
 
+    public static void copy(File originFile, File backupFile) {
+        InputStream inStream = null;
+        OutputStream outStream = null;
+
+        try {
+
+            inStream = new FileInputStream(originFile);
+            outStream = new FileOutputStream(backupFile);
+
+            byte[] buffer = new byte[1024];
+
+            int length;
+            //copy the file content in bytes
+            while ((length = inStream.read(buffer)) > 0) {
+                outStream.write(buffer, 0, length);
+            }
+
+
+            log.info("Backup is created");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (inStream != null) {
+                try {
+                    inStream.close();
+                } catch (IOException e) {
+                    log.severe(e.getMessage());
+                }
+            }
+
+            if (outStream != null) {
+                try {
+                    outStream.close();
+                } catch (IOException e) {
+                    log.severe(e.getMessage());
+                }
+
+            }
+        }
+    }
 }
