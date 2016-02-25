@@ -15,11 +15,16 @@ public class PatcherTest {
     private static final int MAX = 3;
     private File file;
     private String fileName = "test";
+    private File tempFile = null;
 
 
     @Before
     public void init() throws IOException {
         file = createTestFile();
+        tempFile = new File(file.toURI().toString() + ".tmp");
+        if (tempFile.exists()) {
+            tempFile.delete();
+        }
     }
 
     @org.junit.Test
@@ -30,7 +35,6 @@ public class PatcherTest {
     @org.junit.Test
     public void testReplaceWord() throws Exception {
         Patcher patcher = new Patcher();
-        File tempFile = new File(file.toURI().toString() + ".tmp");
         patcher.createTmpFile(tempFile);
         patcher.replaceWord(file, tempFile);
 
