@@ -12,5 +12,5 @@ public class Constant {
     public static final String BACKUP_FILE_NAME = FILE_NAME + ".backup";
     public static final int BUFFER_SIZE = 10;
     public static final int TREE_FRAGMENTS = 3;
-    public static final int CHANGED_SYMBOL_POSITION = 28;
+    public static final int CHANGED_SYMBOL_POSITION = 8;
 }
