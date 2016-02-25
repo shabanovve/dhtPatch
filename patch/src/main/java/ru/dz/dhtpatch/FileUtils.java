@@ -40,10 +40,6 @@ public class FileUtils {
             while ((length = inStream.read(buffer)) > 0) {
                 outStream.write(buffer, 0, length);
             }
-
-
-            log.info("Backup is created");
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
