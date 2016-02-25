@@ -1,8 +1,7 @@
 package ru.dz.dhtpatch;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 
 /**
@@ -12,23 +11,23 @@ public class Searcher {
 
     LinkedList<byte[]> threeFragments = new LinkedList<byte[]>();
 
-    public SearchResult findPatternPosition(FileChannel fileChannel, byte[] pattern) throws IOException {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(Constant.BUFFER_SIZE);
+    public SearchResult findPatternPosition(FileInputStream inputStream, byte[] pattern) throws IOException {
+        byte[] byteBuffer = new byte[1024];
         SearchResult searchResult = new SearchResult();
         int nread;
+        long positionCount = 0;
         do {
-            nread = fileChannel.read(byteBuffer);
-            if (nread > 0){
-                byteBuffer.flip();
-                searchResult = processReadedText(byteBuffer.array(), fileChannel.position(),pattern);
-                byteBuffer.clear();
+            nread = inputStream.read(byteBuffer);
+            positionCount = positionCount + nread;
+            if (nread > 0) {
+                searchResult = processReadedText(byteBuffer, positionCount, pattern);
             }
         } while (nread > 0 && !searchResult.isPatternWasFound());
         return searchResult;
     }
 
     public long findTargetWordInPattern(byte[] pattern, byte[] targetWord) {
-        SearchResult searchResult = findByteSequence(pattern,targetWord);
+        SearchResult searchResult = findByteSequence(pattern, targetWord);
         return searchResult.getPosition();
     }
 
@@ -65,7 +64,7 @@ public class Searcher {
         if (threeFragmentsBytes.length < pattern.length) {
             return searchPatternResult;
         }
-        SearchResult searchingIntoFragments = findByteSequence(threeFragmentsBytes,pattern);
+        SearchResult searchingIntoFragments = findByteSequence(threeFragmentsBytes, pattern);
         if (searchingIntoFragments.isPatternWasFound()) {
             searchPatternResult.setPosition(position - threeFragmentsBytes.length + searchingIntoFragments.getPosition());
             searchPatternResult.setPatternWasFound(true);

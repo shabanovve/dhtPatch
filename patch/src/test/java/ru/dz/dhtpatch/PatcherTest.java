@@ -2,13 +2,10 @@ package ru.dz.dhtpatch;
 
 import org.junit.Before;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 
 /**
  * Created by Vladimir Shabanov on 09/02/16.
@@ -16,13 +13,13 @@ import java.nio.file.StandardOpenOption;
 public class PatcherTest {
 
     private static final int MAX = 3;
-    private Path path;
+    private File file;
     private String fileName = "test";
 
 
     @Before
     public void init() throws IOException {
-        path = createTestFile();
+        file = createTestFile();
     }
 
     @org.junit.Test
@@ -33,74 +30,72 @@ public class PatcherTest {
     @org.junit.Test
     public void testReplaceWord() throws Exception {
         Patcher patcher = new Patcher();
-        Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
-        patcher.createTmpFile(tempPath);
-        patcher.replaceWord(path, tempPath);
+        File tempFile = new File(file.toURI().toString() + ".tmp");
+        patcher.createTmpFile(tempFile);
+        patcher.replaceWord(file, tempFile);
 
-        Path pathOftemp = Paths.get(fileName + ".tmp");
-        FileChannel originChannel = null;
-        FileChannel tempChannel = null;
+        FileInputStream originStream = null;
+        FileInputStream tempStream = null;
         try {
-            originChannel = FileChannel.open(path, StandardOpenOption.READ);
-            tempChannel = FileChannel.open(pathOftemp, StandardOpenOption.READ);
-            assert originChannel.size() == tempChannel.size();
+            originStream = new FileInputStream(file);
+            tempStream = new FileInputStream(tempFile);
+            assert file.length() == tempFile.length();
 
-            ByteBuffer originByteBuffer = ByteBuffer.allocate(10);
-            ByteBuffer tempByteBuffer = ByteBuffer.allocate(10);
+            byte[] originByteBuffer = new byte[1024];
+            byte[] tempByteBuffer = new byte[1024];
 
             int nReadOrgin, nReadTemp;
-            byte[] origin, temp;
             do {
-                nReadOrgin = originChannel.read(originByteBuffer);
-                nReadTemp = tempChannel.read(tempByteBuffer);
+                nReadOrgin = originStream.read(originByteBuffer);
+                nReadTemp = tempStream.read(tempByteBuffer);
 
-                origin = originByteBuffer.array();
-                temp = tempByteBuffer.array();
 
-                for (int i = 0; i < originByteBuffer.array().length; i++) {
-                    if (i != 8 && origin[i] != temp[i]) {
+                for (int i = 0; i < nReadOrgin; i++) {
+                    if (i != 8 && originByteBuffer[i] != tempByteBuffer[i]) {
                         assert false;//String to place breakpoint
                     }
                 }
-                originByteBuffer.clear();
-                tempByteBuffer.clear();
             } while (nReadOrgin > 0 && nReadTemp > 0);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (originChannel != null) {
-                originChannel.close();
+            if (originStream != null) {
+                originStream.close();
             }
-            if (tempChannel != null) {
-                tempChannel.close();
+            if (tempStream != null) {
+                tempStream.close();
             }
         }
     }
 
-    private Path createTestFile() throws IOException {
-        Path path = Paths.get(fileName);
-        Files.deleteIfExists(path);
-        Files.createFile(path);
-        FileChannel fileChannel = null;
+    private File createTestFile() throws IOException {
+        File file = new File(fileName);
+
+        if (file.exists()) {
+            file.delete();
+        }
+
+        file.createNewFile();
+
+        FileOutputStream outputStream = new FileOutputStream(file);
         try {
-            fileChannel = FileChannel.open(path, StandardOpenOption.WRITE);
-            fillWithStrings(fileChannel, 0);
-            fileChannel.write(ByteBuffer.wrap(Constant.PATTERN));
-            fillWithStrings(fileChannel, MAX);
+            fillWithStrings(outputStream, 0);
+            outputStream.write(Constant.PATTERN);
+            fillWithStrings(outputStream, MAX);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (fileChannel != null) {
-                fileChannel.close();
+            if (outputStream != null) {
+                outputStream.close();
             }
         }
-        return path;
+        return file;
     }
 
-    private void fillWithStrings(FileChannel fileChannel, int start) throws IOException {
+    private void fillWithStrings(FileOutputStream outputStream, int start) throws IOException {
         for (Integer i = start; i < start + MAX; i++) {
             String text = i.toString() + "test ";
-            fileChannel.write(ByteBuffer.wrap(text.getBytes()));
+            outputStream.write(text.getBytes());
         }
     }
 

@@ -2,14 +2,8 @@ package ru.dz.dhtpatch;
 
 import lombok.extern.java.Log;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 
 /**
  * Created by Vladimir Shabanov on 09/02/16.
@@ -19,12 +13,12 @@ public class Patcher {
 
     public void start() {
         try {
-            Path path = FileUtils.findFile(Constant.FILE_NAME);
-            if (isFilePatched(path)) {
+            File file = FileUtils.findFile(Constant.FILE_NAME);
+            if (isFilePatched(file)) {
                 log.info("File already is patched");
-                revertFromBackup(path);
+                revertFromBackup(file);
             } else {
-                makePatch(path);
+                makePatch(file);
             }
         } catch (IOException e) {
             log.severe(e.getMessage());
@@ -34,59 +28,84 @@ public class Patcher {
 
     }
 
-    public void makePatch(Path path) throws IOException {
-        new Backuper().backup(path);
+    public void makePatch(File file) throws IOException {
+        new Backuper().backup(file);
 
-        Path tempPath = Paths.get(path.getFileName().toString() + ".tmp");
-        createTmpFile(tempPath);
-        replaceWord(path, tempPath);
-        replaceOriginFile(path, tempPath);
+        File tempFile = new File(file.toURI().toString() + ".tmp");
+        createTmpFile(tempFile);
+        replaceWord(file, tempFile);
+        replaceOriginFile(file, tempFile);
     }
 
-    private void replaceOriginFile(Path path, Path tempPath) {
+    private void replaceOriginFile(File file, File tempFile) {
         try {
-            Files.delete(path);
-            Files.move(tempPath, path);
-            Runtime.getRuntime().exec("chmod +x " + path.getFileName().toString());
+            file.delete();
+            FileUtils.copy(tempFile, file);
+            tempFile.delete();
+            Runtime.getRuntime().exec("chmod +x " + file.toURI().toString());
         } catch (IOException e) {
             log.severe(e.getMessage());
         }
     }
 
-    public void replaceWord(Path path, Path tempPath) {
-        SearchResult searchResult = makeSearch(path, Constant.PATTERN);
+    public void replaceWord(File file, File tempFile) {
+        SearchResult searchResult = makeSearch(file, Constant.PATTERN);
         if (!searchResult.isPatternWasFound())
             throw new RuntimeException("Replacement pattern was not found");
 
-        writeBeforeReplacement(path, searchResult, tempPath);
-        writeReplacement(tempPath);
-        writeAfterReplacement(path, searchResult, tempPath);
-    }
-
-    private void writeAfterReplacement(Path path, SearchResult searchResult, Path tempPath) {
-        FileChannel originChanel = null;
-        FileChannel tempChanel = null;
+        FileInputStream originalStream = null;
+        FileOutputStream tempStream = null;
         try {
-            originChanel = FileChannel.open(path, StandardOpenOption.READ);
-            tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
+            originalStream = new FileInputStream(file);
+            tempStream = new FileOutputStream(tempFile);
 
-            long afterTargetWord = searchResult.getPosition() + Constant.TARGET_WORD.length;
-            long count = originChanel.size() - afterTargetWord;
-            originChanel.position(afterTargetWord);
-            tempChanel.transferFrom(originChanel, afterTargetWord, count);
-        } catch (IOException x) {
-            log.severe("I/O Exception: " + x);
+            writeBeforeReplacement(originalStream, searchResult, tempStream);
+            writeReplacement(tempFile);
+            writeAfterReplacement(originalStream, searchResult, tempStream);
+        } catch (FileNotFoundException e) {
+            log.severe(e.getMessage());
         } finally {
-            if (originChanel != null) {
+            if (originalStream != null) {
                 try {
-                    originChanel.close();
+                    originalStream.close();
                 } catch (IOException e) {
                     log.severe(e.getMessage());
                 }
             }
-            if (tempChanel != null) {
+            if (tempStream != null) {
                 try {
-                    tempChanel.close();
+                    tempStream.close();
+                } catch (IOException e) {
+                    log.severe(e.getMessage());
+                }
+            }
+        }
+
+    }
+
+    private void writeAfterReplacement(FileInputStream originalStream, SearchResult searchResult, FileOutputStream tempStream) {
+        try {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = originalStream.read(buffer)) > 0) {
+                tempStream.write(buffer, 0, length);
+            }
+        } catch (IOException x) {
+            log.severe("I/O Exception: " + x);
+        }
+    }
+
+    private void writeReplacement(File tempFile) {
+        FileOutputStream outputStream = null;
+        try {
+            outputStream = new FileOutputStream(tempFile);
+            outputStream.write(Constant.REPLACEMENT);
+        } catch (IOException x) {
+            log.severe("I/O Exception: " + x);
+        } finally {
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
                 } catch (IOException e) {
                     log.severe(e.getMessage());
                 }
@@ -94,59 +113,35 @@ public class Patcher {
         }
     }
 
-    private void writeReplacement(Path tempPath) {
-        FileChannel tempChanel = null;
+    private void writeBeforeReplacement(FileInputStream originalStream, SearchResult searchResult, FileOutputStream tempStream) {
         try {
-            tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
-            tempChanel.position(tempChanel.size());
-            tempChanel.write(ByteBuffer.wrap(Constant.REPLACEMENT));
-        } catch (IOException x) {
-            log.severe("I/O Exception: " + x);
-        } finally {
-            if (tempChanel != null) {
-                try {
-                    tempChanel.close();
-                } catch (IOException e) {
-                    log.severe(e.getMessage());
+            byte[] buffer = new byte[1024];
+
+            int length;
+            //copy the file content in bytes
+            int positionCount = 0;
+            while ((length = originalStream.read(buffer)) > 0) {
+                positionCount = positionCount + length;
+                boolean isItReadMoreThenNeed = positionCount > searchResult.getPosition();
+                if (isItReadMoreThenNeed) {
+                    int bufferFragment = (int) (positionCount - searchResult.getPosition());
+                    tempStream.write(buffer, 0, bufferFragment);
+                } else {
+                    tempStream.write(buffer, 0, length);
                 }
             }
+        } catch (IOException x) {
+            log.severe("I/O Exception: " + x);
         }
     }
 
-    private void writeBeforeReplacement(Path path, SearchResult searchResult, Path tempPath) {
-        FileChannel originChanel = null;
-        FileChannel tempChanel = null;
-        try {
-            originChanel = FileChannel.open(path, StandardOpenOption.READ);
-            tempChanel = FileChannel.open(tempPath, StandardOpenOption.WRITE);
-            tempChanel.transferFrom(originChanel, 0, searchResult.getPosition());
-        } catch (IOException x) {
-            log.severe("I/O Exception: " + x);
-        } finally {
-            if (originChanel != null) {
-                try {
-                    originChanel.close();
-                } catch (IOException e) {
-                    log.severe(e.getMessage());
-                }
-            }
-            if (tempChanel != null) {
-                try {
-                    tempChanel.close();
-                } catch (IOException e) {
-                    log.severe(e.getMessage());
-                }
-            }
-        }
-    }
-
-    private SearchResult makeSearch(Path path, byte[] pattern) {
+    private SearchResult makeSearch(File file, byte[] pattern) {
         SearchResult searchResult = null;
-        FileChannel originChanel = null;
+        FileInputStream inputStream = null;
         try {
-            originChanel = FileChannel.open(path, StandardOpenOption.READ);
+            inputStream = new FileInputStream(file);
             Searcher searcher = new Searcher();
-            searchResult = searcher.findPatternPosition(originChanel, pattern);
+            searchResult = searcher.findPatternPosition(inputStream, pattern);
 
             if (searchResult.isPatternWasFound()) {
                 correctToTargetWord(searchResult, searcher);
@@ -154,10 +149,10 @@ public class Patcher {
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
         } finally {
-            try {
-                originChanel.close();
-            } catch (IOException e) {
-                if (originChanel != null) {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
                     log.severe(e.getMessage());
                 }
             }
@@ -171,21 +166,20 @@ public class Patcher {
         searchResult.setPosition(patternOffset + targetWordOffset);
     }
 
-    public void createTmpFile(Path tempPath) {
+    public void createTmpFile(File tempFile) {
         try {
-            Files.deleteIfExists(tempPath);
-            Files.createFile(tempPath);
+            tempFile.createNewFile();
         } catch (IOException e) {
             log.severe(e.getMessage());
         }
     }
 
-    public void revertFromBackup(Path path) {
-        new Backuper().revert(path);
+    public void revertFromBackup(File file) {
+        new Backuper().revert(file);
     }
 
-    public boolean isFilePatched(Path path) {
-        SearchResult searchResult = makeSearch(path, Constant.PATCHED_PATTERN);
+    public boolean isFilePatched(File file) {
+        SearchResult searchResult = makeSearch(file, Constant.PATCHED_PATTERN);
         return searchResult.isPatternWasFound();
     }
 }
