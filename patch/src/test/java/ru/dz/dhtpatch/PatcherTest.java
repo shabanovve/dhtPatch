@@ -21,7 +21,7 @@ public class PatcherTest {
     @Before
     public void init() throws IOException {
         file = createTestFile();
-        tempFile = new File(file.toURI().toString() + ".tmp");
+        tempFile = new File(file.getAbsolutePath() + ".tmp");
         if (tempFile.exists()) {
             tempFile.delete();
         }
