@@ -61,7 +61,7 @@ public class Patcher {
 
             writeBeforeReplacement(originalStream, searchResult, tempStream);
             writeReplacement(tempStream);
-            writeAfterReplacement(originalStream, searchResult, tempStream);
+            writeAfterReplacement(file, searchResult, tempStream);
         } catch (FileNotFoundException e) {
             log.severe(e.getMessage());
         } finally {
@@ -83,8 +83,11 @@ public class Patcher {
 
     }
 
-    private void writeAfterReplacement(FileInputStream originalStream, SearchResult searchResult, FileOutputStream tempStream) {
+    private void writeAfterReplacement(File file, SearchResult searchResult, FileOutputStream tempStream) {
+        FileInputStream originalStream = null;
         try {
+            originalStream = new FileInputStream(file);
+            originalStream.skip(searchResult.getPosition() + Constant.TARGET_WORD.length);
             byte[] buffer = new byte[Constant.BUFFER_SIZE];
             int length;
             while ((length = originalStream.read(buffer)) > 0) {
@@ -92,6 +95,14 @@ public class Patcher {
             }
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
+        } finally {
+            if (originalStream != null){
+                try {
+                    originalStream.close();
+                } catch (IOException e) {
+                    log.severe(e.getMessage());
+                }
+            }
         }
     }
 
