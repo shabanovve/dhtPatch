@@ -60,7 +60,7 @@ public class Patcher {
             tempStream = new FileOutputStream(tempFile);
 
             writeBeforeReplacement(originalStream, searchResult, tempStream);
-            writeReplacement(tempFile);
+            writeReplacement(tempStream);
             writeAfterReplacement(originalStream, searchResult, tempStream);
         } catch (FileNotFoundException e) {
             log.severe(e.getMessage());
@@ -85,7 +85,7 @@ public class Patcher {
 
     private void writeAfterReplacement(FileInputStream originalStream, SearchResult searchResult, FileOutputStream tempStream) {
         try {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[Constant.BUFFER_SIZE];
             int length;
             while ((length = originalStream.read(buffer)) > 0) {
                 tempStream.write(buffer, 0, length);
@@ -95,27 +95,18 @@ public class Patcher {
         }
     }
 
-    private void writeReplacement(File tempFile) {
-        FileOutputStream outputStream = null;
+    private void writeReplacement(FileOutputStream tempStream) {
         try {
-            outputStream = new FileOutputStream(tempFile);
-            outputStream.write(Constant.REPLACEMENT);
+            tempStream.write(Constant.REPLACEMENT);
+            tempStream.flush();
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
-        } finally {
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-                    log.severe(e.getMessage());
-                }
-            }
         }
     }
 
     private void writeBeforeReplacement(FileInputStream originalStream, SearchResult searchResult, FileOutputStream tempStream) {
         try {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[Constant.BUFFER_SIZE];
 
             int length;
             //copy the file content in bytes
@@ -126,6 +117,8 @@ public class Patcher {
                 if (isItReadMoreThenNeed) {
                     int bufferFragment = (int) (positionCount - searchResult.getPosition());
                     tempStream.write(buffer, 0, bufferFragment);
+                    tempStream.flush();
+                    break;
                 } else {
                     tempStream.write(buffer, 0, length);
                 }
