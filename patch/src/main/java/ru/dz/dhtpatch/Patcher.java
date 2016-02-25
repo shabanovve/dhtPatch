@@ -168,9 +168,15 @@ public class Patcher {
 
     public void createTmpFile(File tempFile) {
         try {
-            tempFile.createNewFile();
+            if (!tempFile.exists()) {
+                if (!tempFile.getParentFile().exists()) {
+                    tempFile.getParentFile().mkdirs();
+                }
+                tempFile.createNewFile();
+            }
         } catch (IOException e) {
             log.severe(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
