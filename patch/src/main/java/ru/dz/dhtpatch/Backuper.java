@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 @Log
 public class Backuper {
     public void backup(File originFile) throws IOException {
-        File backupFile = new File(originFile.toURI().toString() + ".backup");
+        File backupFile = new File(originFile.getAbsolutePath().toString() + ".backup");
         if (backupFile.exists()) {
             backupFile.delete();
         }
