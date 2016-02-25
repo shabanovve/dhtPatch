@@ -31,7 +31,7 @@ public class Patcher {
     public void makePatch(File file) throws IOException {
         new Backuper().backup(file);
 
-        File tempFile = new File(file.toURI().toString() + ".tmp");
+        File tempFile = new File(file.getAbsolutePath().toString() + ".tmp");
         createTmpFile(tempFile);
         replaceWord(file, tempFile);
         replaceOriginFile(file, tempFile);
@@ -42,7 +42,7 @@ public class Patcher {
             file.delete();
             FileUtils.copy(tempFile, file);
             tempFile.delete();
-            Runtime.getRuntime().exec("chmod +x " + file.toURI().toString());
+            Runtime.getRuntime().exec("chmod +x " + file.getAbsolutePath().toString());
         } catch (IOException e) {
             log.severe(e.getMessage());
         }
