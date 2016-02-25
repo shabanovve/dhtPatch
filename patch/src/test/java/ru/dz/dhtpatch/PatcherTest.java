@@ -55,7 +55,7 @@ public class PatcherTest {
 
 
                 for (int i = 0; i < nReadOrgin; i++) {
-                    if (i != 28 && originByteBuffer[i] != tempByteBuffer[i]) {
+                    if (i != Constant.CHANGED_SYMBOL_POSITION && originByteBuffer[i] != tempByteBuffer[i]) {
                         assert false;//String to place breakpoint
                     }
                 }
