@@ -12,7 +12,7 @@ public class Searcher {
     LinkedList<byte[]> threeFragments = new LinkedList<byte[]>();
 
     public SearchResult findPatternPosition(FileInputStream inputStream, byte[] pattern) throws IOException {
-        byte[] byteBuffer = new byte[1024];
+        byte[] byteBuffer = new byte[Constant.BUFFER_SIZE];
         SearchResult searchResult = new SearchResult();
         int nread;
         long positionCount = 0;
