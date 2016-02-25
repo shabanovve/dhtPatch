@@ -33,7 +33,7 @@ public class FileUtils {
             inStream = new FileInputStream(originFile);
             outStream = new FileOutputStream(backupFile);
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[Constant.BUFFER_SIZE];
 
             int length;
             //copy the file content in bytes

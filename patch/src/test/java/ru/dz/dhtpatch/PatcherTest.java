@@ -45,8 +45,8 @@ public class PatcherTest {
             tempStream = new FileInputStream(tempFile);
             assert file.length() == tempFile.length();
 
-            byte[] originByteBuffer = new byte[1024];
-            byte[] tempByteBuffer = new byte[1024];
+            byte[] originByteBuffer = new byte[Constant.BUFFER_SIZE];
+            byte[] tempByteBuffer = new byte[Constant.BUFFER_SIZE];
 
             int nReadOrgin, nReadTemp;
             do {
