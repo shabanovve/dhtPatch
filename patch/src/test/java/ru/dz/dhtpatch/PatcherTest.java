@@ -12,7 +12,7 @@ import java.io.IOException;
  */
 public class PatcherTest {
 
-    private static final int MAX = 3;
+    private static final int MAX = 12;
     private File file;
     private String fileName = "test";
     private File tempFile = null;

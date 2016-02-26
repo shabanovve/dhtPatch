@@ -53,80 +53,73 @@ public class Patcher {
         if (!searchResult.isPatternWasFound())
             throw new RuntimeException("Replacement pattern was not found");
 
+            writeBeforeReplacement(file, searchResult, tempFile);
+            writeReplacement(tempFile);
+            writeAfterReplacement(file, searchResult, tempFile);
+    }
+
+    private void writeAfterReplacement(File file, SearchResult searchResult, File tempFile) {
+        FileInputStream originalStream = null;
+        BufferedWriter bufferWritter = null;
+        try {
+            originalStream = new FileInputStream(file);
+
+            originalStream.skip(searchResult.getPosition() + Constant.TARGET_WORD.length);
+            byte[] buffer = new byte[Constant.BUFFER_SIZE];
+
+            FileWriter fileWritter = new FileWriter(tempFile.getName(),true);
+            bufferWritter = new BufferedWriter(fileWritter);
+
+            int length = 0;
+            while ((length = originalStream.read(buffer)) > 0) {
+                byte[] cuttedText = Utils.cute(buffer,length);
+                bufferWritter.write(new String(cuttedText));
+                bufferWritter.flush();
+            }
+        } catch (IOException x) {
+            log.severe("I/O Exception: " + x);
+        } finally {
+            closeStream(originalStream);
+            try {
+                bufferWritter.close();
+            } catch (IOException e) {
+                log.severe(e.getMessage());
+                throw new RuntimeException();
+            }
+        }
+    }
+
+    private void writeReplacement(File tempFile) {
+        FileOutputStream tempStream = null;
+        try {
+            FileWriter fileWritter = new FileWriter(tempFile.getName(),true);
+            BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+            bufferWritter.write(new String(Constant.REPLACEMENT));
+            bufferWritter.close();
+        } catch (IOException x) {
+            log.severe("I/O Exception: " + x);
+        } finally {
+            closeStream(tempStream);
+        }
+    }
+
+    private void writeBeforeReplacement(File file, SearchResult searchResult, File tempFile) {
         FileInputStream originalStream = null;
         FileOutputStream tempStream = null;
         try {
+            byte[] buffer = new byte[Constant.BUFFER_SIZE];
+
+            int length = 0;
+            int positionCount = 0;
+
             originalStream = new FileInputStream(file);
             tempStream = new FileOutputStream(tempFile);
 
-            writeBeforeReplacement(originalStream, searchResult, tempStream);
-            writeReplacement(tempStream);
-            writeAfterReplacement(file, searchResult, tempStream);
-        } catch (FileNotFoundException e) {
-            log.severe(e.getMessage());
-        } finally {
-            if (originalStream != null) {
-                try {
-                    originalStream.close();
-                } catch (IOException e) {
-                    log.severe(e.getMessage());
-                }
-            }
-            if (tempStream != null) {
-                try {
-                    tempStream.close();
-                } catch (IOException e) {
-                    log.severe(e.getMessage());
-                }
-            }
-        }
-
-    }
-
-    private void writeAfterReplacement(File file, SearchResult searchResult, FileOutputStream tempStream) {
-        FileInputStream originalStream = null;
-        try {
-            originalStream = new FileInputStream(file);
-            originalStream.skip(searchResult.getPosition() + Constant.TARGET_WORD.length);
-            byte[] buffer = new byte[Constant.BUFFER_SIZE];
-            int length;
-            while ((length = originalStream.read(buffer)) > 0) {
-                tempStream.write(buffer, 0, length);
-            }
-        } catch (IOException x) {
-            log.severe("I/O Exception: " + x);
-        } finally {
-            if (originalStream != null){
-                try {
-                    originalStream.close();
-                } catch (IOException e) {
-                    log.severe(e.getMessage());
-                }
-            }
-        }
-    }
-
-    private void writeReplacement(FileOutputStream tempStream) {
-        try {
-            tempStream.write(Constant.REPLACEMENT);
-            tempStream.flush();
-        } catch (IOException x) {
-            log.severe("I/O Exception: " + x);
-        }
-    }
-
-    private void writeBeforeReplacement(FileInputStream originalStream, SearchResult searchResult, FileOutputStream tempStream) {
-        try {
-            byte[] buffer = new byte[Constant.BUFFER_SIZE];
-
-            int length;
-            //copy the file content in bytes
-            int positionCount = 0;
             while ((length = originalStream.read(buffer)) > 0) {
                 positionCount = positionCount + length;
                 boolean isItReadMoreThenNeed = positionCount > searchResult.getPosition();
                 if (isItReadMoreThenNeed) {
-                    int bufferFragment = (int) (positionCount - searchResult.getPosition());
+                    int bufferFragment = length - (int) (positionCount - searchResult.getPosition());
                     tempStream.write(buffer, 0, bufferFragment);
                     tempStream.flush();
                     break;
@@ -136,6 +129,20 @@ public class Patcher {
             }
         } catch (IOException x) {
             log.severe("I/O Exception: " + x);
+        } finally {
+            closeStream(originalStream);
+            closeStream(tempStream);
+        }
+    }
+
+    private void closeStream(Closeable stream) {
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                log.severe(e.getMessage());
+                throw new RuntimeException();
+            }
         }
     }
 

@@ -20,7 +20,8 @@ public class Searcher {
             nread = inputStream.read(byteBuffer);
             positionCount = positionCount + nread;
             if (nread > 0) {
-                searchResult = processReadedText(byteBuffer, positionCount, pattern);
+                byte[] cuttedText = Utils.cute(byteBuffer, nread);
+                searchResult = processReadedText(cuttedText, positionCount, pattern);
             }
         } while (nread > 0 && !searchResult.isPatternWasFound());
         return searchResult;
