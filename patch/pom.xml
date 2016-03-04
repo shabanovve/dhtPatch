@@ -41,6 +41,22 @@
           </archive>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>osxappbundle-maven-plugin</artifactId>
+        <version>1.0-alpha-2</version>
+        <configuration>
+          <mainClass>ru.dz.dhtpatch.App</mainClass>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>bundle</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -61,6 +77,11 @@
       <artifactId>junit</artifactId>
       <version>4.12</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>osxappbundle-maven-plugin</artifactId>
+      <version>1.0-alpha-2</version>
     </dependency>
   </dependencies>
 </project>
