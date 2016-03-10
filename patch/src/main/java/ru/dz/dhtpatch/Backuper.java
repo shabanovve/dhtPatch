@@ -22,7 +22,11 @@ public class Backuper {
     public void revert(File file) {
         log.info("Revert from backup");
         try {
-            File backupFile = FileUtils.findFile(Constant.BACKUP_FILE_NAME);
+            File backupFile = FileUtils.findFile(file.getParentFile() + "/" + Constant.BACKUP_FILE_NAME);
+            if (backupFile == null) {
+                log.severe("Backup file not found");
+                throw new RuntimeException("Backup file not found");
+            }
             file.delete();
             FileUtils.copy(backupFile, file);
             backupFile.delete();

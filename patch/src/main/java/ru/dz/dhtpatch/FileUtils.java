@@ -11,12 +11,12 @@ import java.net.URISyntaxException;
 @Log
 public class FileUtils {
 
-    public static File findFile(String fileName) throws URISyntaxException {
+    public static File findFileInCurrentDirectory(String fileName) throws URISyntaxException, FileNotFoundException {
         String dir = new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent();
         String pathToFile = dir + "/" + fileName;
         File file = new File(pathToFile);
         if (!file.exists()) {
-            throw new RuntimeException("File " + pathToFile + " not found");
+            throw new FileNotFoundException("File " + pathToFile + " not found");
         } else {
             log.info("File " + pathToFile + " is found");
         }
@@ -41,7 +41,7 @@ public class FileUtils {
                 outStream.write(buffer, 0, length);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.severe("IO error");
         } finally {
             if (inStream != null) {
                 try {
@@ -60,5 +60,39 @@ public class FileUtils {
 
             }
         }
+    }
+
+    public static File findTargetFile(String path) throws URISyntaxException {
+        File result = null;
+
+        result = findInCurrentDirectory();
+        if (result != null)
+            return result;
+
+        result = findFile(path);
+        if (result != null)
+            return result;
+
+        if (result == null)
+            throw new RuntimeException("File not found");
+
+        return result;
+    }
+
+    public static File findFile(String path) throws URISyntaxException {
+        File result = null;
+        result = new File(path);
+
+        return result.exists() ? result : null;
+    }
+
+    public static File findInCurrentDirectory() throws URISyntaxException {
+        File result = null;
+        try {
+            result = findFileInCurrentDirectory(Constant.FILE_NAME);
+        } catch (FileNotFoundException e) {
+            log.warning("No " + Constant.FILE_NAME + " in current directory");
+        }
+        return result;
     }
 }

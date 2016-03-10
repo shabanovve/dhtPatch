@@ -13,7 +13,7 @@ public class Patcher {
 
     public void start() {
         try {
-            File file = FileUtils.findFile(Constant.FILE_NAME);
+            File file = FileUtils.findTargetFile(Constant.DIRECTORY_NAME + "/" + Constant.FILE_NAME);
             if (isFilePatched(file)) {
                 log.info("File already is patched");
                 revertFromBackup(file);
