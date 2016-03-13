@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 public class App extends Application {
     private TextField fileNameField = new TextField ();
     private Button patchButton = new Button();
+    private Button backupButton = new Button();
     private Button browseButton = new Button();
     private String path = "";
 
@@ -50,8 +51,10 @@ public class App extends Application {
     private void checkIsFilePatched() {
         if (Patcher.isFilePatched(Paths.get(path))) {
             patchButton.setDisable(true);
+            backupButton.setDisable(false);
         } else {
             patchButton.setDisable(false);
+            backupButton.setDisable(true);
         }
     }
 
@@ -79,11 +82,24 @@ public class App extends Application {
     private void renderScene(Stage primaryStage) {
         primaryStage.setTitle("DHT-patch");
         GridPane gridPane = getPane();
-        primaryStage.setScene(new Scene(gridPane, 270, 100));
+        primaryStage.setScene(new Scene(gridPane, 470, 150));
         addFileNameField(gridPane);
         addButtonBrowse(gridPane);
         addButtonPatch(gridPane);
+        addButtonRevertFromBackup(gridPane);
         primaryStage.show();
+    }
+
+    private void addButtonRevertFromBackup(GridPane gridPane) {
+        backupButton.setText("Revert from backup");
+        backupButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.printf("Revert");
+            }
+        });
+        GridPane.setConstraints(backupButton,0,6);
+        gridPane.getChildren().add(backupButton);
     }
 
     private void addButtonBrowse(GridPane gridPane) {
@@ -99,6 +115,7 @@ public class App extends Application {
     }
 
     private void addFileNameField(GridPane gridPane) {
+        fileNameField.setPrefWidth(370);
         GridPane.setConstraints(fileNameField,0,0);
         gridPane.getChildren().add(fileNameField);
     }
