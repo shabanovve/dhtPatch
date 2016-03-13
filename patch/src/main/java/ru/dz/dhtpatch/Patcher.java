@@ -97,7 +97,7 @@ public class Patcher {
         }
     }
 
-    private SearchResult makeSearch(Path path, byte[] pattern) {
+    private static SearchResult makeSearch(Path path, byte[] pattern) {
         SearchResult searchResult = null;
         try (
                 FileChannel originChanel = FileChannel.open(path, StandardOpenOption.READ);
@@ -114,7 +114,7 @@ public class Patcher {
         return searchResult;
     }
 
-    private void correctToTargetWord(SearchResult searchResult, Searcher searcher) {
+    private static void correctToTargetWord(SearchResult searchResult, Searcher searcher) {
         long targetWordOffset = searcher.findTargetWordInPattern(Constant.PATTERN, Constant.TARGET_WORD);
         long patternOffset = searchResult.getPosition();
         searchResult.setPosition(patternOffset + targetWordOffset);
@@ -133,7 +133,7 @@ public class Patcher {
         new Backuper().revert(path);
     }
 
-    public boolean isFilePatched(Path path) {
+    public static boolean isFilePatched(Path path) {
         SearchResult searchResult = makeSearch(path, Constant.PATCHED_PATTERN);
         return searchResult.isPatternWasFound();
     }

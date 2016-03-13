@@ -48,7 +48,11 @@ public class App extends Application {
     }
 
     private void checkIsFilePatched() {
-
+        if (Patcher.isFilePatched(Paths.get(path))) {
+            patchButton.setDisable(true);
+        } else {
+            patchButton.setDisable(false);
+        }
     }
 
     private void initFileNameField() {
@@ -61,14 +65,14 @@ public class App extends Application {
 
         if (Files.exists(Paths.get(currecntDirectory, Constant.FILE_NAME))) {
             path = currecntDirectory.concat(Constant.FILE_NAME);
-        }
-
-        if ("".equals(path) && Files.exists(Paths.get(Constant.DIRECTORY_NAME,Constant.FILE_NAME))) {
+        } else if (Files.exists(Paths.get(Constant.DIRECTORY_NAME,Constant.FILE_NAME))) {
             path = Constant.DIRECTORY_NAME.concat(Constant.FILE_NAME);
         }
 
         if (!path.isEmpty()) {
             fileNameField.setText(path);
+        } else {
+            throw new RuntimeException("File " + Constant.FILE_NAME + " not found");
         }
     }
 
