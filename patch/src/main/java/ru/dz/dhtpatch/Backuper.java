@@ -2,8 +2,7 @@ package ru.dz.dhtpatch;
 
 import lombok.extern.java.Log;
 
-import java.io.*;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,19 +13,19 @@ import java.nio.file.Paths;
 @Log
 public class Backuper {
     public void backup(Path pathToOriginFile) throws IOException {
-        Path pathToBackup = Paths.get(pathToOriginFile.getFileName().toString() + ".backup");
+        Path pathToBackup = Paths.get(pathToOriginFile.toString() + ".backup");
         Files.deleteIfExists(pathToBackup);
         Files.copy(pathToOriginFile,pathToBackup);
     }
 
-    public void revert(Path path) {
+    public void revert(Path pathToPatchedFile) {
         log.info("Revert from backup");
         try {
-            Path backupPath = FileUtils.findFile(Constant.BACKUP_FILE_NAME);
-            Files.delete(path);
-            Files.copy(backupPath, path);
+            Path backupPath = Paths.get(pathToPatchedFile.toString() + ".backup");
+            Files.delete(pathToPatchedFile);
+            Files.copy(backupPath, pathToPatchedFile);
             Files.delete(backupPath);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             log.severe(e.getMessage());
         }
 

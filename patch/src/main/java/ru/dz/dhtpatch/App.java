@@ -11,32 +11,32 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import lombok.extern.java.Log;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 @Log
 public class App extends Application {
-    private TextField fileNameField = new TextField ();
+    private TextField fileNameField = new TextField();
     private Button patchButton = new Button();
     private Button backupButton = new Button();
     private Button browseButton = new Button();
     private String path = "";
+    private Patcher patcher = new Patcher();
 
-    public static void main( String[] args ) {
+    public static void main(String[] args) {
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        initPatch();
-        renderScene(primaryStage);
 
-        System.out.println( "uTorrent DHT patch.");
-        try{
-            new Patcher().start();
-            log.info("successfully complete.");
-        } catch (Exception e){
+        System.out.println("uTorrent DHT patch.");
+        try {
+            initPatch();
+            renderScene(primaryStage);
+        } catch (Exception e) {
             log.severe("Finished with error");
             log.severe(e.getMessage());
         }
@@ -68,7 +68,7 @@ public class App extends Application {
 
         if (Files.exists(Paths.get(currecntDirectory, Constant.FILE_NAME))) {
             path = currecntDirectory.concat(Constant.FILE_NAME);
-        } else if (Files.exists(Paths.get(Constant.DIRECTORY_NAME,Constant.FILE_NAME))) {
+        } else if (Files.exists(Paths.get(Constant.DIRECTORY_NAME, Constant.FILE_NAME))) {
             path = Constant.DIRECTORY_NAME.concat(Constant.FILE_NAME);
         }
 
@@ -95,10 +95,11 @@ public class App extends Application {
         backupButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                System.out.printf("Revert");
+                patcher.revertFromBackup(Paths.get(path));
+                initPatch();
             }
         });
-        GridPane.setConstraints(backupButton,0,6);
+        GridPane.setConstraints(backupButton, 0, 6);
         gridPane.getChildren().add(backupButton);
     }
 
@@ -110,13 +111,13 @@ public class App extends Application {
                 System.out.printf("Browse");
             }
         });
-        GridPane.setConstraints(browseButton,1,0);
+        GridPane.setConstraints(browseButton, 1, 0);
         gridPane.getChildren().add(browseButton);
     }
 
     private void addFileNameField(GridPane gridPane) {
         fileNameField.setPrefWidth(370);
-        GridPane.setConstraints(fileNameField,0,0);
+        GridPane.setConstraints(fileNameField, 0, 0);
         gridPane.getChildren().add(fileNameField);
     }
 
@@ -131,14 +132,18 @@ public class App extends Application {
     private void addButtonPatch(GridPane gridPane) {
         patchButton.setText("Patch");
         patchButton.setOnAction(new EventHandler<ActionEvent>() {
-
             @Override
             public void handle(ActionEvent event) {
-                System.out.println("Hello World!");
+                try {
+                    patcher.makePatch(Paths.get(path));
+                    initPatch();
+                } catch (IOException e) {
+                    throw new RuntimeException("Get problem with finding file " + path);
+                }
             }
         });
 
-        GridPane.setConstraints(patchButton,0,5);
+        GridPane.setConstraints(patchButton, 0, 5);
         gridPane.getChildren().add(patchButton);
     }
 }
