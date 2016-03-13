@@ -11,15 +11,24 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import lombok.extern.java.Log;
 
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 @Log
-public class App extends Application
-{
+public class App extends Application {
+    private TextField fileNameField = new TextField ();
+    private Button patchButton = new Button();
+    private Button browseButton = new Button();
+    private String path = "";
+
     public static void main( String[] args ) {
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        initPatch();
         renderScene(primaryStage);
 
         System.out.println( "uTorrent DHT patch.");
@@ -33,39 +42,61 @@ public class App extends Application
 
     }
 
+    private void initPatch() {
+        initFileNameField();
+        checkIsFilePatched();
+    }
+
+    private void checkIsFilePatched() {
+
+    }
+
+    private void initFileNameField() {
+        String currecntDirectory = "";
+        try {
+            currecntDirectory = FileUtils.returnCurrectDirectory();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        if (Files.exists(Paths.get(currecntDirectory, Constant.FILE_NAME))) {
+            path = currecntDirectory.concat(Constant.FILE_NAME);
+        }
+
+        if ("".equals(path) && Files.exists(Paths.get(Constant.DIRECTORY_NAME,Constant.FILE_NAME))) {
+            path = Constant.DIRECTORY_NAME.concat(Constant.FILE_NAME);
+        }
+
+        if (!path.isEmpty()) {
+            fileNameField.setText(path);
+        }
+    }
+
     private void renderScene(Stage primaryStage) {
         primaryStage.setTitle("DHT-patch");
-
         GridPane gridPane = getPane();
-
         primaryStage.setScene(new Scene(gridPane, 270, 100));
-
         addFileNameField(gridPane);
-
         addButtonBrowse(gridPane);
-
         addButtonPatch(gridPane);
-
         primaryStage.show();
     }
 
     private void addButtonBrowse(GridPane gridPane) {
-        Button button = new Button();
-        button.setText("Browse");
-        button.setOnAction(new EventHandler<ActionEvent>() {
+        browseButton.setText("Browse");
+        browseButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 System.out.printf("Browse");
             }
         });
-        GridPane.setConstraints(button,1,0);
-        gridPane.getChildren().add(button);
+        GridPane.setConstraints(browseButton,1,0);
+        gridPane.getChildren().add(browseButton);
     }
 
     private void addFileNameField(GridPane gridPane) {
-        TextField textField = new TextField ();
-        GridPane.setConstraints(textField,0,0);
-        gridPane.getChildren().add(textField);
+        GridPane.setConstraints(fileNameField,0,0);
+        gridPane.getChildren().add(fileNameField);
     }
 
     private GridPane getPane() {
@@ -77,9 +108,8 @@ public class App extends Application
     }
 
     private void addButtonPatch(GridPane gridPane) {
-        Button btn = new Button();
-        btn.setText("Patch");
-        btn.setOnAction(new EventHandler<ActionEvent>() {
+        patchButton.setText("Patch");
+        patchButton.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
@@ -87,7 +117,7 @@ public class App extends Application
             }
         });
 
-        GridPane.setConstraints(btn,0,5);
-        gridPane.getChildren().add(btn);
+        GridPane.setConstraints(patchButton,0,5);
+        gridPane.getChildren().add(patchButton);
     }
 }

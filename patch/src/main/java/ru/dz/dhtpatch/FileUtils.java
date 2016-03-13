@@ -14,9 +14,7 @@ import java.nio.file.Paths;
 @Log
 public class FileUtils {
 
-    public static Path findFile(String fileName) throws URISyntaxException {
-        String dir = new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent();
-        String pathToFile = dir + "/" + fileName;
+    public static Path findFile(String pathToFile) throws URISyntaxException {
         Path path = Paths.get(pathToFile);
         if (!Files.exists(path)) {
             throw new RuntimeException("File " + pathToFile + " not found");
@@ -24,6 +22,10 @@ public class FileUtils {
             log.info("File " + pathToFile + " is found");
         }
         return path;
+    }
+
+    public static String returnCurrectDirectory() throws URISyntaxException {
+        return new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent();
     }
 
 
