@@ -6,14 +6,15 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.extern.java.Log;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,6 +25,7 @@ public class App extends Application {
     private Button patchButton = new Button();
     private Button backupButton = new Button();
     private Button browseButton = new Button();
+    private Label errorLabel = new Label();
     private String path = "";
     private Patcher patcher = new Patcher();
 
@@ -46,6 +48,7 @@ public class App extends Application {
     }
 
     private void initPatch() {
+        errorLabel.setText("");
         initFileNameField();
         checkIsFilePatched();
     }
@@ -96,7 +99,16 @@ public class App extends Application {
         addButtonBrowse(gridPane, primaryStage);
         addButtonPatch(gridPane);
         addButtonRevertFromBackup(gridPane);
+        addErrorLable(gridPane);
         primaryStage.show();
+    }
+
+    private void addErrorLable(GridPane gridPane) {
+        errorLabel.setText("");
+        errorLabel.setTextFill(Color.RED);
+        GridPane.setConstraints(errorLabel, 0, 2);
+        gridPane.getChildren().add(errorLabel);
+
     }
 
     private void addButtonRevertFromBackup(GridPane gridPane) {
@@ -157,8 +169,9 @@ public class App extends Application {
                 try {
                     patcher.makePatch(Paths.get(path));
                     initPatch();
-                } catch (IOException e) {
-                    throw new RuntimeException("Get problem with finding file " + path);
+                } catch (Exception e) {
+                    errorLabel.setText("Cannot patch file " + path);
+                    throw new RuntimeException("Cannot patch file " + path);
                 }
             }
         });
