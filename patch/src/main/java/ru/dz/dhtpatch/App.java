@@ -8,9 +8,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.extern.java.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -59,23 +61,30 @@ public class App extends Application {
     }
 
     private void initFileNameField() {
-        String currecntDirectory = "";
-        try {
-            currecntDirectory = FileUtils.returnCurrectDirectory();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+        findTargetInCertainPlace();
 
-        if (Files.exists(Paths.get(currecntDirectory, Constant.FILE_NAME))) {
-            path = currecntDirectory.concat(Constant.FILE_NAME);
-        } else if (Files.exists(Paths.get(Constant.DIRECTORY_NAME, Constant.FILE_NAME))) {
-            path = Constant.DIRECTORY_NAME.concat(Constant.FILE_NAME);
-        }
-
-        if (!path.isEmpty()) {
-            fileNameField.setText(path);
-        } else {
+        boolean pathIsSteelEmpty = path.isEmpty();
+        if (pathIsSteelEmpty) {
             throw new RuntimeException("File " + Constant.FILE_NAME + " not found");
+        } else {
+            fileNameField.setText(path);
+        }
+    }
+
+    private void findTargetInCertainPlace() {
+        if (path.isEmpty()) {
+            String currecntDirectory = "";
+            try {
+                currecntDirectory = FileUtils.returnCurrectDirectory();
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+
+            if (Files.exists(Paths.get(currecntDirectory, Constant.FILE_NAME))) {
+                path = currecntDirectory.concat(Constant.FILE_NAME);
+            } else if (Files.exists(Paths.get(Constant.DIRECTORY_NAME, Constant.FILE_NAME))) {
+                path = Constant.DIRECTORY_NAME.concat(Constant.FILE_NAME);
+            }
         }
     }
 
@@ -84,7 +93,7 @@ public class App extends Application {
         GridPane gridPane = getPane();
         primaryStage.setScene(new Scene(gridPane, 470, 150));
         addFileNameField(gridPane);
-        addButtonBrowse(gridPane);
+        addButtonBrowse(gridPane, primaryStage);
         addButtonPatch(gridPane);
         addButtonRevertFromBackup(gridPane);
         primaryStage.show();
@@ -103,12 +112,17 @@ public class App extends Application {
         gridPane.getChildren().add(backupButton);
     }
 
-    private void addButtonBrowse(GridPane gridPane) {
+    private void addButtonBrowse(GridPane gridPane, Stage primaryStage) {
         browseButton.setText("Browse");
         browseButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                System.out.printf("Browse");
+                FileChooser fileChooser = new FileChooser();
+                File file = fileChooser.showOpenDialog(primaryStage);
+                if (file != null) {
+                    path = file.getAbsolutePath();
+                    initPatch();
+                }
             }
         });
         GridPane.setConstraints(browseButton, 1, 0);
@@ -117,6 +131,12 @@ public class App extends Application {
 
     private void addFileNameField(GridPane gridPane) {
         fileNameField.setPrefWidth(370);
+        fileNameField.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                initPatch();
+            }
+        });
         GridPane.setConstraints(fileNameField, 0, 0);
         gridPane.getChildren().add(fileNameField);
     }
